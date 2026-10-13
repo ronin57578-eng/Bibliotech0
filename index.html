@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Game Vault — Виртуальная библиотека игр (1990–2026)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js для 3D коробок -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#090a0f] text-slate-100 font-['Plus_Jakarta_Sans',sans-serif] min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+
+    <!-- Верхняя панель навигации -->
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-[#0b0e14]/80 border-b border-cyan-500/20 px-4 lg:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 animate-pulse">
+                <i class="fa-solid fa-gamepad text-xl text-black font-bold"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-wider font-['Orbitron'] bg-gradient-to-r from-cyan-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">NEXUS VAULT</h1>
+                <p class="text-xs text-slate-400">Виртуальная библиотека 1990 — 2026</p>
+            </div>
+        </div>
+
+        <!-- Поиск -->
+        <div class="w-full md:w-80 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="searchInput" placeholder="Поиск игры, жанра, разработчика..." class="w-full bg-[#131823] border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all shadow-inner">
+        </div>
+
+        <!-- Управление видом и избранным -->
+        <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+            <button id="favoritesBtn" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#131823] border border-slate-800 hover:border-cyan-500/50 text-slate-300 text-sm transition-all">
+                <i class="fa-solid fa-heart text-rose-500"></i>
+                <span class="hidden sm:inline">Избранное</span>
+                <span id="favCount" class="bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded-md text-xs font-bold">0</span>
+            </button>
+
+            <!-- Переключатель видов -->
+            <div class="flex items-center bg-[#131823] border border-slate-800 rounded-xl p-1 gap-1">
+                <button data-view="grid" class="view-btn p-2 rounded-lg text-slate-400 hover:text-white transition-all active" title="Сетка">
+                    <i class="fa-solid fa-grip"></i>
+                </button>
+                <button data-view="wall" class="view-btn p-2 rounded-lg text-slate-400 hover:text-white transition-all" title="Стена боксов">
+                    <i class="fa-solid fa-border-all"></i>
+                </button>
+                <button data-view="coverflow" class="view-btn p-2 rounded-lg text-slate-400 hover:text-white transition-all" title="Карусель (Альбом)">
+                    <i class="fa-solid fa-layer-group"></i>
+                </button>
+                <button data-view="list" class="view-btn p-2 rounded-lg text-slate-400 hover:text-white transition-all" title="Список">
+                    <i class="fa-solid fa-list"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Фильтры -->
+    <nav class="bg-[#0b0e14]/50 border-b border-slate-800/60 px-4 lg:px-8 py-3 flex flex-wrap items-center gap-4 text-sm z-30">
+        <!-- Года -->
+        <div class="flex items-center gap-2">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Год:</span>
+            <select id="yearFilter" class="bg-[#131823] border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                <option value="all">Все годы (1990 - 2026)</option>
+                <option value="90s">1990–1999 (Ретро)</option>
+                <option value="00s">2000–2009 (Классика)</option>
+                <option value="10s">2010–2019 (Эра HD)</option>
+                <option value="20s">2020–2026 (Некстген)</option>
+            </select>
+        </div>
+
+        <!-- Платформа -->
+        <div class="flex items-center gap-2">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Платформа:</span>
+            <select id="platformFilter" class="bg-[#131823] border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                <option value="all">Все платформы</option>
+                <option value="PC">PC (Windows / Linux)</option>
+                <option value="PlayStation">PlayStation (PS1-PS5)</option>
+                <option value="Xbox">Xbox (Series / One / 360)</option>
+                <option value="Nintendo">Nintendo (Switch / Wii / 64)</option>
+                <option value="SEGA">SEGA (Mega Drive / Saturn)</option>
+            </select>
+        </div>
+
+        <!-- Жанр -->
+        <div class="flex items-center gap-2">
+            <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Жанр:</span>
+            <select id="genreFilter" class="bg-[#131823] border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-500">
+                <option value="all">Все жанры</option>
+                <option value="Экшен">Экшен</option>
+                <option value="RPG">RPG</option>
+                <option value="Шутер">Шутер</option>
+                <option value="Стратегия">Стратегия</option>
+                <option value="Приключения">Приключения</option>
+                <option value="Гонки">Гонки</option>
+                <option value="Хоррор">Хоррор</option>
+            </select>
+        </div>
+
+        <div class="ml-auto text-xs text-slate-400">
+            Найдено игр: <span id="gameCount" class="text-cyan-400 font-bold">0</span>
+        </div>
+    </nav>
+
+    <!-- Основная рабочая область -->
+    <main class="flex-1 p-4 lg:p-8 relative overflow-hidden" id="mainContainer">
+        <!-- Сетка / Стена / Список -->
+        <div id="gamesContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 transition-all duration-300">
+            <!-- Динамический контент -->
+        </div>
+
+        <!-- Режим Coverflow (Альбом) -->
+        <div id="coverflowContainer" class="hidden h-[600px] flex flex-col items-center justify-center relative">
+            <div id="coverflowTrack" class="w-full flex items-center justify-center relative h-[450px] perspective-1000">
+                <!-- Карусель рендерится через JS -->
+            </div>
+            <div class="flex items-center gap-6 mt-6">
+                <button id="cfPrev" class="w-12 h-12 rounded-full bg-[#131823] border border-slate-700 hover:border-cyan-500 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div id="cfTitle" class="text-center font-['Orbitron'] text-lg text-cyan-300 tracking-wider">Название игры</div>
+                <button id="cfNext" class="w-12 h-12 rounded-full bg-[#131823] border border-slate-700 hover:border-cyan-500 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Заглушка, если ничего не найдено -->
+        <div id="noResults" class="hidden flex flex-col items-center justify-center py-24 text-center">
+            <div class="w-20 h-20 rounded-2xl bg-slate-800/50 flex items-center justify-center text-slate-500 text-3xl mb-4 border border-slate-700">
+                <i class="fa-solid fa-ghost"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-300 mb-1">Игры не найдены</h3>
+            <p class="text-sm text-slate-500">Попробуйте изменить параметры фильтрации или поисковый запрос</p>
+        </div>
+    </main>
+
+    <!-- Модальное окно детализации игры и 3D бокса -->
+    <div id="gameModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-[#10141d] border border-cyan-500/30 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl shadow-cyan-500/10 flex flex-col md:flex-row relative animate-scaleUp">
+            
+            <button id="closeModal" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-slate-900/80 border border-slate-700 hover:border-rose-500 hover:text-rose-400 text-slate-400 flex items-center justify-center transition-all">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Левая колонка: 3D Демонстрация коробки -->
+            <div class="w-full md:w-1/2 bg-gradient-to-b from-[#151b28] to-[#0a0d14] p-6 flex flex-col items-center justify-center relative border-b md:border-b-0 md:border-r border-slate-800">
+                <div class="absolute top-4 left-4 text-xs font-['Orbitron'] text-cyan-400 tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> 3D ВИРТУАЛЬНЫЙ БОКС
+                </div>
+                <!-- Контейнер для Three.js -->
+                <div id="canvas3DContainer" class="w-full h-80 cursor-grab active:cursor-grabbing flex items-center justify-center"></div>
+                <p class="text-xs text-slate-400 mt-2 text-center"><i class="fa-solid fa-hand-pointer mr-1"></i> Зажмите и вращайте мышкой</p>
+            </div>
+
+            <!-- Правая колонка: Информация об игре -->
+            <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span id="modalPlatform" class="text-xs px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-semibold">PC</span>
+                        <span id="modalYear" class="text-xs text-slate-400 font-medium">1993</span>
+                        <span id="modalGenre" class="text-xs text-indigo-400 font-medium">Шутер</span>
+                    </div>
+
+                    <h2 id="modalTitle" class="text-2xl md:text-3xl font-extrabold font-['Orbitron'] text-white mb-4">Название игры</h2>
+                    
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-xl text-amber-400 text-sm font-bold">
+                            <i class="fa-solid fa-star"></i>
+                            <span id="modalRating">9.5</span>
+                        </div>
+                        <div class="text-xs text-slate-400">
+                            Разработчик: <span id="modalDev" class="text-slate-200 font-semibold">Id Software</span>
+                        </div>
+                    </div>
+
+                    <p id="modalDesc" class="text-sm text-slate-300 leading-relaxed mb-6">Описание игры...</p>
+                </div>
+
+                <div class="flex items-center gap-4 pt-4 border-t border-slate-800">
+                    <button id="modalFavBtn" class="flex-1 py-3 px-4 rounded-xl bg-[#182030] hover:bg-slate-800 border border-slate-700 font-medium text-sm transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-heart text-rose-500"></i>
+                        <span id="modalFavText">В избранное</span>
+                    </button>
+                    <button id="launchBtn" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-black font-bold text-sm transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> Играть / Запустить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-[#0b0e14] border-t border-slate-800/80 py-6 px-4 text-center text-xs text-slate-500">
+        <p>Nexus Vault Game Library &copy; 1990–2026. Все виртуальные обложки и данные каталогизированы для демонстрации.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
